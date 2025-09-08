@@ -1,30 +1,39 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"time"
-
-	"github.com/aknea001/goDoList/pkg/backend"
+	"os"
 )
 
+type User struct {
+	Username string `json:"username"`
+	Hash     string `json:"hash"`
+}
+
 func main() {
-	done := make(chan bool)
+	var username string
+	var hash string
 
-	go backend.Connect(done)
+	fmt.Print("Username: ")
+	fmt.Scan(&username)
 
-	ticker := time.NewTicker(100 * time.Millisecond)
-	defer ticker.Stop()
+	fmt.Print("Password: ")
+	fmt.Scan(&hash)
 
-outer:
-	for {
-		select {
-		case <-done:
-			fmt.Print("\nSuccess!\n")
-			break outer
-		case <-ticker.C:
-			fmt.Print(".")
-		}
+	newUser := []User{
+		{Username: username, Hash: hash},
 	}
-	fmt.Println("Executing query on db..")
-	fmt.Println("NOO it didnt work 🙏")
+
+	byteValue, err := json.Marshal(newUser[0])
+
+	if err != nil {
+		panic(err)
+	}
+
+	err = os.WriteFile("users.json", byteValue, 0644)
+
+	if err != nil {
+		panic(err)
+	}
 }

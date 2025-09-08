@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/aknea001/goDoList/pkg/frontend"
+	"fmt"
 )
 
 func main() {
-	frontend.HeyloWorldo()
+	fmt.Println("heyy")
 }
