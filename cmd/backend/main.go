@@ -1,39 +1,30 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
+	"log"
+
+	"github.com/aknea001/goDoList/pkg/backend"
+	"github.com/gin-gonic/gin"
 )
 
-type User struct {
-	Username string `json:"username"`
-	Hash     string `json:"hash"`
-}
-
 func main() {
-	var username string
-	var hash string
+	router := gin.Default()
+	router.POST("/register", func(ctx *gin.Context) {
+		var UserData backend.User
 
-	fmt.Print("Username: ")
-	fmt.Scan(&username)
+		err := ctx.ShouldBindBodyWithJSON(&UserData)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	fmt.Print("Password: ")
-	fmt.Scan(&hash)
+		fmt.Println(UserData.Hash)
 
-	newUser := []User{
-		{Username: username, Hash: hash},
-	}
+		//backend.AddJsonUser()
+		ctx.JSON(200, gin.H{
+			"message": "pong",
+		})
+	})
 
-	byteValue, err := json.Marshal(newUser[0])
-
-	if err != nil {
-		panic(err)
-	}
-
-	err = os.WriteFile("users.json", byteValue, 0644)
-
-	if err != nil {
-		panic(err)
-	}
+	router.Run()
 }
