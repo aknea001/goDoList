@@ -1,2 +1,5 @@
 test/
-users.json
+user.json
+
+*.py
+.venv

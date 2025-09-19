@@ -1,9 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"errors"
 	"log"
 
+	"github.com/aknea001/goDoList/pkg"
 	"github.com/aknea001/goDoList/pkg/backend"
 	"github.com/gin-gonic/gin"
 )
@@ -11,18 +12,49 @@ import (
 func main() {
 	router := gin.Default()
 	router.POST("/register", func(ctx *gin.Context) {
-		var UserData backend.User
+		var UserData pkg.User
 
-		err := ctx.ShouldBindBodyWithJSON(&UserData)
+		err := ctx.ShouldBindJSON(&UserData)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		fmt.Println(UserData.Hash)
+		err = backend.RegisterJson(UserData.Username, UserData.Passwd)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-		//backend.AddJsonUser()
+		ctx.JSON(201, gin.H{
+			"msg": "Success",
+			"id":  nil,
+		})
+	})
+
+	router.POST("/login", func(ctx *gin.Context) {
+		var UserData pkg.User
+
+		err := ctx.ShouldBindJSON(&UserData)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = backend.LoginJson(UserData.Username, UserData.Passwd)
+		if err != nil {
+			var credE *pkg.CredentialError
+			if errors.As(err, &credE) {
+				ctx.JSON(401, gin.H{
+					"msg": "Wrong username or password",
+				})
+
+				return
+			}
+
+			log.Fatal(err)
+		}
+
 		ctx.JSON(200, gin.H{
-			"message": "pong",
+			"msg":   "Success",
+			"token": nil,
 		})
 	})
 
