@@ -72,12 +72,10 @@ func (api APIconn) Login(username string, passwd string) error {
 		return fmt.Errorf("%s: unknown error", strconv.Itoa(res.StatusCode))
 	}
 
-	bodyBytes, err := io.ReadAll(res.Body)
+	_, err = io.ReadAll(res.Body)
 	if err != nil {
 		return err
 	}
-
-	fmt.Println(string(bodyBytes))
 
 	return nil
 }
