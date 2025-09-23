@@ -23,11 +23,19 @@ func main() {
 
 		err := ctx.ShouldBindJSON(&UserData)
 		if err != nil {
+			ctx.JSON(500, gin.H{
+				"msg": "Unknown error",
+			})
+
 			log.Fatal(err)
 		}
 
 		err = backend.RegisterJson(UserData.Username, UserData.Passwd)
 		if err != nil {
+			ctx.JSON(500, gin.H{
+				"msg": "Unknown error",
+			})
+
 			log.Fatal(err)
 		}
 
@@ -42,6 +50,10 @@ func main() {
 
 		err := ctx.ShouldBindJSON(&UserData)
 		if err != nil {
+			ctx.JSON(500, gin.H{
+				"msg": "Unknown error",
+			})
+
 			log.Fatal(err)
 		}
 
@@ -55,6 +67,10 @@ func main() {
 
 				return
 			}
+
+			ctx.JSON(500, gin.H{
+				"msg": "Unknown error",
+			})
 
 			log.Fatal(err)
 		}
@@ -71,6 +87,10 @@ func main() {
 
 		signedToken, err := baseToken.SignedString(jwtKey)
 		if err != nil {
+			ctx.JSON(500, gin.H{
+				"msg": "Unknown error",
+			})
+
 			log.Fatal(err)
 		}
 
@@ -109,6 +129,10 @@ func main() {
 		}, jwt.WithValidMethods(validMethods))
 
 		if err != nil {
+			ctx.JSON(500, gin.H{
+				"msg": "Unknown error",
+			})
+
 			log.Fatal(err)
 		}
 
