@@ -5,6 +5,11 @@ type User struct {
 	Passwd   string `json:"passwd"`
 }
 
+type LoginRes struct {
+	Msg   string `json:"msg"`
+	Token string `json:"token"`
+}
+
 type CredentialError struct {
 	Message string
 }

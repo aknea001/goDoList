@@ -72,10 +72,21 @@ func (api APIconn) Login(username string, passwd string) error {
 		return fmt.Errorf("%s: unknown error", strconv.Itoa(res.StatusCode))
 	}
 
-	_, err = io.ReadAll(res.Body)
+	data, err := io.ReadAll(res.Body)
 	if err != nil {
 		return err
 	}
+
+	var newLoginRes pkg.LoginRes
+
+	err = json.Unmarshal(data, &newLoginRes)
+	if err != nil {
+		return err
+	}
+
+	api.Token = newLoginRes.Token
+
+	fmt.Println(api.Token)
 
 	return nil
 }
