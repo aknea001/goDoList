@@ -14,6 +14,73 @@ import (
 	"github.com/joho/godotenv"
 )
 
+func validateToken(ctx *gin.Context) (string, error) {
+	headers := ctx.Request.Header
+
+	auth := headers.Get("Authorization")
+	if auth == "" {
+		ctx.JSON(401, gin.H{
+			"msg": "Missing authorization of type Bearer",
+		})
+
+		return "", jwt.ErrTokenMalformed
+	}
+
+	authSplit := strings.Split(auth, " ")
+	if len(authSplit) <= 1 || authSplit[0] != "Bearer" {
+		ctx.JSON(401, gin.H{
+			"msg": "Missing authorization of type Bearer",
+		})
+
+		return "", jwt.ErrTokenMalformed
+	}
+
+	signedToken := authSplit[1]
+	validMethods := make([]string, 1)
+	validMethods[0] = "HS256"
+
+	token, err := jwt.Parse(signedToken, func(token *jwt.Token) (any, error) {
+		return []byte(os.Getenv("jwtKey")), nil
+	}, jwt.WithValidMethods(validMethods))
+
+	switch {
+	case token.Valid:
+		break
+
+	// being a lil lazy, might make more in-dept res later
+	case errors.Is(err, jwt.ErrTokenMalformed) ||
+		errors.Is(err, jwt.ErrTokenSignatureInvalid) ||
+		errors.Is(err, jwt.ErrTokenExpired):
+
+		ctx.JSON(401, gin.H{
+			"msg": "Invalid token",
+		})
+
+		return "", jwt.ErrTokenMalformed
+	default:
+		ctx.JSON(500, gin.H{
+			"msg": "Unknown server error",
+		})
+
+		log.Print(err)
+
+		return "", &pkg.UnknownServerError{}
+	}
+
+	sub, err := token.Claims.GetSubject()
+	if err != nil {
+		ctx.JSON(500, gin.H{
+			"msg": "Unknown server error",
+		})
+
+		log.Print(err)
+
+		return "", &pkg.UnknownServerError{}
+	}
+
+	return sub, nil
+}
+
 func main() {
 	godotenv.Load()
 
@@ -124,51 +191,14 @@ func main() {
 	})
 
 	router.GET("/validateToken", func(ctx *gin.Context) {
-		headers := ctx.Request.Header
-
-		auth := headers.Get("Authorization")
-		if auth == "" {
-			ctx.JSON(401, gin.H{
-				"msg": "Missing authorization of type Bearer",
-			})
-			return
-		}
-
-		authSplit := strings.Split(auth, " ")
-		if len(authSplit) <= 1 || authSplit[0] != "Bearer" {
-			ctx.JSON(401, gin.H{
-				"msg": "Missing authorization of type Bearer",
-			})
-
-			return
-		}
-
-		signedToken := authSplit[1]
-		validMethods := make([]string, 1)
-		validMethods[0] = "HS256"
-
-		token, err := jwt.Parse(signedToken, func(token *jwt.Token) (any, error) {
-			return []byte(os.Getenv("jwtKey")), nil
-		}, jwt.WithValidMethods(validMethods))
-
+		sub, err := validateToken(ctx)
 		if err != nil {
-			ctx.JSON(500, gin.H{
-				"msg": "Unknown error",
-			})
-
-			log.Fatal(err)
-		}
-
-		if !token.Valid {
-			ctx.JSON(401, gin.H{
-				"msg": "Invalid authorization",
-			})
-
 			return
 		}
 
 		ctx.JSON(200, gin.H{
 			"msg": "Token is valid",
+			"sub": sub,
 		})
 	})
 
