@@ -1,6 +1,7 @@
 test/
 user.json
 .env
+*.log
 
 *.py
 .venv

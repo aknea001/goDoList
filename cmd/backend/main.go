@@ -17,6 +17,19 @@ import (
 func main() {
 	godotenv.Load()
 
+	logFile, err := os.OpenFile(
+		"goDoListBackend.log",
+		os.O_WRONLY|os.O_APPEND|os.O_CREATE,
+		0664,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer logFile.Close()
+
+	log.SetOutput(logFile)
+
 	router := gin.Default()
 	router.POST("/register", func(ctx *gin.Context) {
 		var UserData pkg.User
@@ -27,7 +40,9 @@ func main() {
 				"msg": "Unknown error",
 			})
 
-			log.Fatal(err)
+			log.Print(err)
+
+			return
 		}
 
 		err = backend.RegisterJson(UserData.Username, UserData.Passwd)
@@ -36,7 +51,9 @@ func main() {
 				"msg": "Unknown error",
 			})
 
-			log.Fatal(err)
+			log.Print(err)
+
+			return
 		}
 
 		ctx.JSON(201, gin.H{
@@ -54,7 +71,9 @@ func main() {
 				"msg": "Unknown error",
 			})
 
-			log.Fatal(err)
+			log.Print(err)
+
+			return
 		}
 
 		err = backend.LoginJson(UserData.Username, UserData.Passwd)
@@ -72,7 +91,9 @@ func main() {
 				"msg": "Unknown error",
 			})
 
-			log.Fatal(err)
+			log.Print(err)
+
+			return
 		}
 
 		jwtKey := []byte(os.Getenv("jwtKey"))
@@ -91,7 +112,9 @@ func main() {
 				"msg": "Unknown error",
 			})
 
-			log.Fatal(err)
+			log.Print(err)
+
+			return
 		}
 
 		ctx.JSON(200, gin.H{
