@@ -65,9 +65,7 @@ func (api APIconn) Login(username string, passwd string) error {
 	defer res.Body.Close()
 
 	if res.StatusCode == 401 {
-		return &pkg.CredentialError{
-			Message: "wrong username or password",
-		}
+		return &pkg.CredentialError{}
 	} else if res.StatusCode != 200 {
 		return fmt.Errorf("%s: unknown error", strconv.Itoa(res.StatusCode))
 	}

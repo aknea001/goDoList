@@ -10,10 +10,14 @@ type LoginRes struct {
 	Token string `json:"token"`
 }
 
-type CredentialError struct {
-	Message string
-}
+type CredentialError struct{}
 
 func (e *CredentialError) Error() string {
-	return e.Message
+	return "wrong username or password"
+}
+
+type UnknownServerError struct{}
+
+func (e *UnknownServerError) Error() string {
+	return "unknown error"
 }

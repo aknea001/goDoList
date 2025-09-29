@@ -96,9 +96,7 @@ func LoginJson(username string, passwd string) error {
 	)
 	var pathError *os.PathError
 	if errors.As(err, &pathError) {
-		return &pkg.CredentialError{
-			Message: "wrong username or password",
-		}
+		return &pkg.CredentialError{}
 	}
 
 	defer jsonFile.Close()
@@ -123,17 +121,13 @@ func LoginJson(username string, passwd string) error {
 		}
 
 		if currentUser.Passwd != passwd {
-			return &pkg.CredentialError{
-				Message: "wrong username or password",
-			}
+			return &pkg.CredentialError{}
 		}
 
 		return nil
 	}
 
-	return &pkg.CredentialError{
-		Message: "wrong username or password",
-	}
+	return &pkg.CredentialError{}
 }
 
 func newJson() {
