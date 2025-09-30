@@ -176,9 +176,15 @@ func main() {
 			return
 		}
 
+		tasks, err := backend.GetJson(sub)
+		if err != nil {
+			unknownError(err, ctx)
+			return
+		}
+
 		ctx.JSON(200, gin.H{
-			"msg": "Token is valid",
-			"sub": sub,
+			"msg":   "Success",
+			"tasks": tasks,
 		})
 	})
 
