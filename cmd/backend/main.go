@@ -14,6 +14,14 @@ import (
 	"github.com/joho/godotenv"
 )
 
+func unknownError(err error, ctx *gin.Context) {
+	ctx.JSON(500, gin.H{
+		"msg": "unknown server error",
+	})
+
+	log.Print(err)
+}
+
 func validateToken(ctx *gin.Context) (string, error) {
 	headers := ctx.Request.Header
 
@@ -58,22 +66,14 @@ func validateToken(ctx *gin.Context) (string, error) {
 
 		return "", jwt.ErrTokenMalformed
 	default:
-		ctx.JSON(500, gin.H{
-			"msg": "Unknown server error",
-		})
-
-		log.Print(err)
+		unknownError(err, ctx)
 
 		return "", &pkg.UnknownServerError{}
 	}
 
 	sub, err := token.Claims.GetSubject()
 	if err != nil {
-		ctx.JSON(500, gin.H{
-			"msg": "Unknown server error",
-		})
-
-		log.Print(err)
+		unknownError(err, ctx)
 
 		return "", &pkg.UnknownServerError{}
 	}
@@ -103,22 +103,14 @@ func main() {
 
 		err := ctx.ShouldBindJSON(&UserData)
 		if err != nil {
-			ctx.JSON(500, gin.H{
-				"msg": "Unknown error",
-			})
-
-			log.Print(err)
+			unknownError(err, ctx)
 
 			return
 		}
 
 		err = backend.RegisterJson(UserData.Username, UserData.Passwd)
 		if err != nil {
-			ctx.JSON(500, gin.H{
-				"msg": "Unknown error",
-			})
-
-			log.Print(err)
+			unknownError(err, ctx)
 
 			return
 		}
@@ -134,11 +126,7 @@ func main() {
 
 		err := ctx.ShouldBindJSON(&UserData)
 		if err != nil {
-			ctx.JSON(500, gin.H{
-				"msg": "Unknown error",
-			})
-
-			log.Print(err)
+			unknownError(err, ctx)
 
 			return
 		}
@@ -154,11 +142,7 @@ func main() {
 				return
 			}
 
-			ctx.JSON(500, gin.H{
-				"msg": "Unknown error",
-			})
-
-			log.Print(err)
+			unknownError(err, ctx)
 
 			return
 		}
@@ -175,11 +159,7 @@ func main() {
 
 		signedToken, err := baseToken.SignedString(jwtKey)
 		if err != nil {
-			ctx.JSON(500, gin.H{
-				"msg": "Unknown error",
-			})
-
-			log.Print(err)
+			unknownError(err, ctx)
 
 			return
 		}
