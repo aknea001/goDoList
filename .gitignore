@@ -1,5 +1,7 @@
-test/
 user.json
+task.json
+
+test/
 .env
 *.log
 

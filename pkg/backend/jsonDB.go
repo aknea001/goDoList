@@ -130,6 +130,43 @@ func LoginJson(username string, passwd string) error {
 	return &pkg.CredentialError{}
 }
 
-func newJson() {
+func GetJson(user string) ([]pkg.Task, error) {
+	jsonFileName := "task.json"
 
+	jsonFile, err := os.OpenFile(
+		jsonFileName,
+		os.O_RDONLY,
+		0,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	defer jsonFile.Close()
+
+	tasks := make([]pkg.Task, 0)
+
+	jsonScanner := bufio.NewScanner(jsonFile)
+	for jsonScanner.Scan() {
+		currentBytes := jsonScanner.Bytes()
+
+		if len(currentBytes) <= 1 {
+			continue
+		}
+
+		var currentTask pkg.Task
+
+		err := json.Unmarshal(currentBytes, &currentTask)
+		if err != nil {
+			return nil, err
+		}
+
+		if currentTask.Owner != user {
+			continue
+		}
+
+		tasks = append(tasks, currentTask)
+	}
+
+	return tasks, nil
 }

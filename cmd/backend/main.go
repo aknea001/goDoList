@@ -190,7 +190,7 @@ func main() {
 		})
 	})
 
-	router.GET("/validateToken", func(ctx *gin.Context) {
+	router.GET("/tasks/get", func(ctx *gin.Context) {
 		sub, err := validateToken(ctx)
 		if err != nil {
 			return
