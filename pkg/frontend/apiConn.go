@@ -84,7 +84,8 @@ func (api APIconn) Login(username string, passwd string) error {
 
 	api.Token = newLoginRes.Token
 
-	fmt.Println(api.Token)
+	bearerToken := fmt.Sprintf("Bearer %s", api.Token)
+	api.Header.Set("Authorization", bearerToken)
 
 	return nil
 }
@@ -93,6 +94,7 @@ func NewAPIconn(baseURL string) APIconn {
 	var newAPIconn APIconn
 
 	newAPIconn.BaseURL = baseURL
+	newAPIconn.Header = http.Header{}
 
 	return newAPIconn
 }
