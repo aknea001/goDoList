@@ -10,7 +10,7 @@ import (
 	"github.com/aknea001/goDoList/pkg"
 )
 
-func FirstUser(byteValue []byte, file *os.File) error {
+func FirstJson(byteValue []byte, file *os.File) error {
 	jsonList := fmt.Appendf(nil, "[\n%s\n]", byteValue)
 
 	_, err := file.Write(jsonList)
@@ -21,7 +21,7 @@ func FirstUser(byteValue []byte, file *os.File) error {
 	return nil
 }
 
-func AppendUser(byteValue []byte, file *os.File) error {
+func AppendJson(byteValue []byte, file *os.File) error {
 	formattedData := fmt.Appendf(nil, "\n,\n%s\n]", byteValue)
 
 	fileInfo, err := file.Stat()
@@ -71,14 +71,14 @@ func RegisterJson(username string, passwd string) error {
 	}
 
 	if fileInfo.Size() <= 0 {
-		err = FirstUser(byteValue, jsonFile)
+		err = FirstJson(byteValue, jsonFile)
 		if err != nil {
 			return err
 		}
 		return nil
 	}
 
-	err = AppendUser(byteValue, jsonFile)
+	err = AppendJson(byteValue, jsonFile)
 	if err != nil {
 		return err
 	}
@@ -130,7 +130,7 @@ func LoginJson(username string, passwd string) error {
 	return &pkg.CredentialError{}
 }
 
-func GetJson(user string) ([]pkg.Task, error) {
+func GetTaskJson(user string) ([]pkg.Task, error) {
 	jsonFileName := "task.json"
 
 	jsonFile, err := os.OpenFile(
@@ -169,4 +169,43 @@ func GetJson(user string) ([]pkg.Task, error) {
 	}
 
 	return tasks, nil
+}
+
+func NewTaskJson(task pkg.Task) error {
+	jsonFileName := "task.json"
+
+	byteValue, err := json.Marshal(task)
+	if err != nil {
+		return err
+	}
+
+	jsonFile, err := os.OpenFile(
+		jsonFileName,
+		os.O_WRONLY|os.O_APPEND|os.O_CREATE,
+		0644,
+	)
+	if err != nil {
+		return err
+	}
+
+	defer jsonFile.Close()
+
+	fileInfo, err := jsonFile.Stat()
+	if err != nil {
+		return err
+	}
+
+	if fileInfo.Size() <= 0 {
+		err = FirstJson(byteValue, jsonFile)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	err = AppendJson(byteValue, jsonFile)
+	if err != nil {
+		return err
+	}
+	return nil
 }

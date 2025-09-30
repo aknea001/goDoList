@@ -176,7 +176,7 @@ func main() {
 			return
 		}
 
-		tasks, err := backend.GetJson(sub)
+		tasks, err := backend.GetTaskJson(sub)
 		if err != nil {
 			unknownError(err, ctx)
 			return
@@ -185,6 +185,33 @@ func main() {
 		ctx.JSON(200, gin.H{
 			"msg":   "Success",
 			"tasks": tasks,
+		})
+	})
+
+	router.POST("/tasks/new", func(ctx *gin.Context) {
+		sub, err := validateToken(ctx)
+		if err != nil {
+			return
+		}
+
+		var newTask pkg.Task
+
+		err = ctx.ShouldBindJSON(&newTask)
+		if err != nil {
+			unknownError(err, ctx)
+			return
+		}
+
+		newTask.Owner = sub
+
+		err = backend.NewTaskJson(newTask)
+		if err != nil {
+			unknownError(err, ctx)
+			return
+		}
+
+		ctx.JSON(200, gin.H{
+			"msg": "Success",
 		})
 	})
 
