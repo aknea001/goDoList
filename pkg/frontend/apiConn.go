@@ -90,6 +90,41 @@ func (api APIconn) Login(username string, passwd string) error {
 	return nil
 }
 
+func (api APIconn) GetTasks() ([]pkg.Task, error) {
+	fullUrl := fmt.Sprintf("%s/tasks/get", api.BaseURL)
+
+	req, err := http.NewRequest("GET", fullUrl, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header = api.Header
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer res.Body.Close()
+
+	data, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var newGetTasksRes pkg.GetTasksRes
+
+	err = json.Unmarshal(data, &newGetTasksRes)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode != 200 {
+		return nil, fmt.Errorf("%s: %s", strconv.Itoa(res.StatusCode), newGetTasksRes.Msg)
+	}
+
+	return newGetTasksRes.Tasks, nil
+}
+
 func NewAPIconn(baseURL string) APIconn {
 	var newAPIconn APIconn
 

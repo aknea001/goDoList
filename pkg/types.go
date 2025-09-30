@@ -16,6 +16,11 @@ type LoginRes struct {
 	Token string `json:"token"`
 }
 
+type GetTasksRes struct {
+	Msg   string `json:"msg"`
+	Tasks []Task `json:"tasks"`
+}
+
 type CredentialError struct{}
 
 func (e *CredentialError) Error() string {

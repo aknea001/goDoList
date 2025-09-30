@@ -29,7 +29,7 @@ func main() {
 	var x int
 
 loginLoop:
-	for 1 > 0 {
+	for {
 		fmt.Print("What do you want to do?\n[ 1 ] Login \n[ 2 ] Register\n[ 1/2 ]: ")
 		fmt.Scan(&x)
 
@@ -62,5 +62,12 @@ loginLoop:
 		}
 	}
 
-	fmt.Println("Logged in..")
+	tasks, err := api.GetTasks()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for i := range tasks {
+		fmt.Printf("%s: %s\n", tasks[i].Title, tasks[i].Description)
+	}
 }
