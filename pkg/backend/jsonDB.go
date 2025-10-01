@@ -209,3 +209,88 @@ func NewTaskJson(task pkg.Task) error {
 	}
 	return nil
 }
+
+func appendWithNewLine(slice []byte, newData []byte) []byte {
+	newData = fmt.Appendf(nil, "%s\n", string(newData))
+
+	slice = append(slice, newData...)
+
+	return slice
+}
+
+func DeleteTaskJson(task pkg.Task) error {
+	jsonFileName := "task.json"
+
+	jsonFile, err := os.OpenFile(
+		jsonFileName,
+		os.O_RDWR,
+		0,
+	)
+	if err != nil {
+		return err
+	}
+
+	defer jsonFile.Close()
+
+	newJsonData := make([]byte, 0)
+	deleted := false
+
+	jsonScanner := bufio.NewScanner(jsonFile)
+	for jsonScanner.Scan() {
+		currentBytes := jsonScanner.Bytes()
+
+		if len(currentBytes) <= 1 {
+			newJsonData = appendWithNewLine(newJsonData, currentBytes)
+			continue
+		}
+
+		var currentTask pkg.Task
+
+		err = json.Unmarshal(currentBytes, &currentTask)
+		if err != nil {
+			return err
+		}
+
+		if currentTask.Owner != task.Owner ||
+			currentTask.Title != task.Title {
+
+			newJsonData = appendWithNewLine(newJsonData, currentBytes)
+			continue
+		}
+
+		indexesToRemove := len(newJsonData) - 2
+		newJsonData = newJsonData[:indexesToRemove]
+
+		deleted = true
+	}
+
+	if !deleted {
+		return &pkg.DoesntExistError{
+			ResourceName: "task",
+		}
+	}
+
+	lastIndex := len(newJsonData) - 1
+	newJsonData = newJsonData[:lastIndex]
+
+	tempFile, err := os.CreateTemp("", "task_*,json")
+	if err != nil {
+		return err
+	}
+
+	defer os.Remove(tempFile.Name())
+
+	_, err = tempFile.Write(newJsonData)
+	if err != nil {
+		return err
+	}
+
+	tempFile.Close()
+
+	err = os.Rename(tempFile.Name(), jsonFileName)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

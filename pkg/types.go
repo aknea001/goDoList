@@ -20,15 +20,3 @@ type GetTasksRes struct {
 	Msg   string `json:"msg"`
 	Tasks []Task `json:"tasks"`
 }
-
-type CredentialError struct{}
-
-func (e *CredentialError) Error() string {
-	return "wrong username or password"
-}
-
-type UnknownServerError struct{}
-
-func (e *UnknownServerError) Error() string {
-	return "unknown error"
-}

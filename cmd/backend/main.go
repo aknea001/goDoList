@@ -215,5 +215,38 @@ func main() {
 		})
 	})
 
+	router.DELETE("/tasks/delete", func(ctx *gin.Context) {
+		sub, err := validateToken(ctx)
+		if err != nil {
+			return
+		}
+
+		var task pkg.Task
+
+		err = ctx.ShouldBindJSON(&task)
+		if err != nil {
+			unknownError(err, ctx)
+			return
+		}
+
+		task.Owner = sub
+
+		err = backend.DeleteTaskJson(task)
+		if errors.Is(err, &pkg.DoesntExistError{}) {
+			ctx.JSON(403, gin.H{
+				"msg": err.Error(),
+			})
+
+			return
+		} else if err != nil {
+			unknownError(err, ctx)
+			return
+		}
+
+		ctx.JSON(200, gin.H{
+			"msg": "Success",
+		})
+	})
+
 	router.Run()
 }
