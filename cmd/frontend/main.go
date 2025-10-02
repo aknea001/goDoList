@@ -62,12 +62,14 @@ loginLoop:
 		}
 	}
 
-	tasks, err := api.GetTasks()
-	if err != nil {
-		log.Fatal(err)
-	}
+	for {
+		tasks, err := api.GetTasks()
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	for i := range tasks {
-		fmt.Printf("%s: %s\n", tasks[i].Title, tasks[i].Description)
+		for i := range tasks {
+			fmt.Printf("%s: %s\n", tasks[i].Title, tasks[i].Description)
+		}
 	}
 }
