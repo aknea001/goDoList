@@ -7,7 +7,7 @@ type User struct {
 
 type Task struct {
 	Owner       string `json:"owner"`
-	Title       string `json:"title"`
+	Title       string `json:"title" binding:"required,min=2,max=20"`
 	Description string `json:"desc"`
 }
 

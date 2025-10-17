@@ -20,8 +20,15 @@ func DrawTable(tasks []pkg.Task) {
 	descLens := make([]int, 0)
 
 	for i := range tasks {
-		titleLens = append(titleLens, len(tasks[i].Title))
-		descLens = append(descLens, len(tasks[i].Description))
+		titleLen := len(tasks[i].Title)
+		descLen := len(tasks[i].Description)
+
+		if descLen > 50 {
+			descLen = 53
+		}
+
+		titleLens = append(titleLens, titleLen)
+		descLens = append(descLens, descLen)
 	}
 
 	// add the len of "title" and "description"
@@ -43,6 +50,11 @@ func DrawTable(tasks []pkg.Task) {
 	for i := range tasks {
 		currentTitle := tasks[i].Title
 		currentDesc := tasks[i].Description
+
+		if longestDesc == 53 && len(currentDesc) > 50 {
+			newCurrentDesc := currentDesc[:50]
+			currentDesc = newCurrentDesc + "..."
+		}
 
 		fmt.Printf("| %s%s | %s%s |\n",
 			currentTitle, strings.Repeat(" ", longestTitle-len(currentTitle)),

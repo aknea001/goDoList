@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 
 	"github.com/aknea001/goDoList/pkg"
 )
@@ -37,7 +36,7 @@ func (api APIconn) Register(username string, passwd string) error {
 	}
 
 	if res.StatusCode != 201 {
-		return fmt.Errorf("%s: unknown error", strconv.Itoa(res.StatusCode))
+		return fmt.Errorf("%d: unknown error", res.StatusCode)
 	}
 
 	return nil
@@ -67,7 +66,7 @@ func (api APIconn) Login(username string, passwd string) error {
 	if res.StatusCode == 401 {
 		return &pkg.CredentialError{}
 	} else if res.StatusCode != 200 {
-		return fmt.Errorf("%s: unknown error", strconv.Itoa(res.StatusCode))
+		return fmt.Errorf("%d: unknown error", res.StatusCode)
 	}
 
 	data, err := io.ReadAll(res.Body)
@@ -119,7 +118,7 @@ func (api APIconn) GetTasks() ([]pkg.Task, error) {
 	}
 
 	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("%s: %s", strconv.Itoa(res.StatusCode), newGetTasksRes.Msg)
+		return nil, fmt.Errorf("%d: %s", res.StatusCode, newGetTasksRes.Msg)
 	}
 
 	return newGetTasksRes.Tasks, nil
