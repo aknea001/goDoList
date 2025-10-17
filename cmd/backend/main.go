@@ -176,7 +176,7 @@ func main() {
 			return
 		}
 
-		tasks, err := backend.GetTaskJson(sub)
+		tasks, err := backend.GetTasksJson(sub)
 		if err != nil {
 			unknownError(err, ctx)
 			return
@@ -185,6 +185,37 @@ func main() {
 		ctx.JSON(200, gin.H{
 			"msg":   "Success",
 			"tasks": tasks,
+		})
+	})
+
+	router.GET("/tasks/:title", func(ctx *gin.Context) {
+		sub, err := validateToken(ctx)
+		if err != nil {
+			return
+		}
+
+		task := pkg.Task{
+			Owner: sub,
+			Title: ctx.Param("title"),
+		}
+
+		fullTask, err := backend.GetOneTaskJson(task)
+		if err != nil {
+			if errors.Is(err, &pkg.DoesntExistError{}) {
+				ctx.JSON(403, gin.H{
+					"msg": err.Error(),
+				})
+
+				return
+			}
+
+			unknownError(err, ctx)
+			return
+		}
+
+		ctx.JSON(200, gin.H{
+			"msg":  "Success",
+			"task": fullTask,
 		})
 	})
 

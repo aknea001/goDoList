@@ -130,7 +130,7 @@ func LoginJson(username string, passwd string) error {
 	return &pkg.CredentialError{}
 }
 
-func GetTaskJson(user string) ([]pkg.Task, error) {
+func GetTasksJson(user string) ([]pkg.Task, error) {
 	jsonFileName := "task.json"
 
 	jsonFile, err := os.OpenFile(
@@ -169,6 +169,43 @@ func GetTaskJson(user string) ([]pkg.Task, error) {
 	}
 
 	return tasks, nil
+}
+
+func GetOneTaskJson(task pkg.Task) (pkg.Task, error) {
+	jsonFileName := "task.json"
+
+	jsonFile, err := os.OpenFile(
+		jsonFileName,
+		os.O_RDONLY,
+		0,
+	)
+	if err != nil {
+		return task, err
+	}
+
+	defer jsonFile.Close()
+
+	jsonScanner := bufio.NewScanner(jsonFile)
+	for jsonScanner.Scan() {
+		currentBytes := jsonScanner.Bytes()
+
+		if len(currentBytes) <= 1 {
+			continue
+		}
+
+		var currentTask pkg.Task
+
+		err := json.Unmarshal(currentBytes, &currentTask)
+		if err != nil {
+			return task, err
+		}
+
+		if currentTask.Title == task.Title && currentTask.Owner == task.Owner {
+			return currentTask, nil
+		}
+	}
+
+	return task, &pkg.DoesntExistError{ResourceName: "task"}
 }
 
 func NewTaskJson(task pkg.Task) error {
