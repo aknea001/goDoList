@@ -17,7 +17,7 @@ type APIconn struct {
 }
 
 func (api APIconn) Register(username string, passwd string) error {
-	fullUrl := fmt.Sprintf("%s/register", api.BaseURL)
+	fullUrl := fmt.Sprintf("%s/users", api.BaseURL)
 
 	newUser := pkg.User{
 		Username: username, Passwd: passwd,
@@ -43,7 +43,7 @@ func (api APIconn) Register(username string, passwd string) error {
 }
 
 func (api APIconn) Login(username string, passwd string) error {
-	fullUrl := fmt.Sprintf("%s/login", api.BaseURL)
+	fullUrl := fmt.Sprintf("%s/auth/login", api.BaseURL)
 
 	newUser := pkg.User{
 		Username: username, Passwd: passwd,
@@ -90,7 +90,7 @@ func (api APIconn) Login(username string, passwd string) error {
 }
 
 func (api APIconn) GetTasks() ([]pkg.Task, error) {
-	fullUrl := fmt.Sprintf("%s/tasks/get", api.BaseURL)
+	fullUrl := fmt.Sprintf("%s/tasks", api.BaseURL)
 
 	req, err := http.NewRequest("GET", fullUrl, nil)
 	if err != nil {

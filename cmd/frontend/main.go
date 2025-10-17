@@ -1,9 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"log"
+	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/aknea001/goDoList/pkg"
@@ -62,14 +66,40 @@ loginLoop:
 		}
 	}
 
+	tasks, err := api.GetTasks()
+mainloop:
 	for {
-		tasks, err := api.GetTasks()
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		for i := range tasks {
-			fmt.Printf("%s: %s\n", tasks[i].Title, tasks[i].Description)
+		frontend.DrawTable(tasks)
+		fmt.Print(">> ")
+
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		input := scanner.Text()
+
+		inputSlice := strings.Split(input, " ")
+		command := inputSlice[0]
+
+		switch command {
+		case "fn":
+			if len(inputSlice) == 2 {
+				log.Print(inputSlice)
+				id, err := strconv.Atoi(inputSlice[1])
+				if err != nil {
+					fmt.Println("ID has to be of type int")
+					time.Sleep(1 * time.Second)
+
+					continue mainloop
+				}
+
+				//send api request
+
+				tasks = append(tasks[:id], tasks[id+1:]...)
+			}
+
 		}
 	}
 }
