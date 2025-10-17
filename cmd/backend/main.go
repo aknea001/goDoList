@@ -98,7 +98,7 @@ func main() {
 	log.SetOutput(logFile)
 
 	router := gin.Default()
-	router.POST("/register", func(ctx *gin.Context) {
+	router.POST("/users", func(ctx *gin.Context) {
 		var UserData pkg.User
 
 		err := ctx.ShouldBindJSON(&UserData)
@@ -121,17 +121,17 @@ func main() {
 		})
 	})
 
-	router.POST("/login", func(ctx *gin.Context) {
-		var UserData pkg.User
+	router.POST("/auth/login", func(ctx *gin.Context) {
+		var user pkg.User
 
-		err := ctx.ShouldBindJSON(&UserData)
+		err := ctx.ShouldBindJSON(&user)
 		if err != nil {
 			unknownError(err, ctx)
 
 			return
 		}
 
-		err = backend.LoginJson(UserData.Username, UserData.Passwd)
+		err = backend.LoginJson(user.Username, user.Passwd)
 		if err != nil {
 			var credE *pkg.CredentialError
 			if errors.As(err, &credE) {
@@ -152,7 +152,7 @@ func main() {
 		// replace sub with IDs when proper DB implemented
 		claims := &jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour)),
-			Subject:   UserData.Username,
+			Subject:   user.Username,
 		}
 
 		baseToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -170,7 +170,7 @@ func main() {
 		})
 	})
 
-	router.GET("/tasks/get", func(ctx *gin.Context) {
+	router.GET("/tasks", func(ctx *gin.Context) {
 		sub, err := validateToken(ctx)
 		if err != nil {
 			return
@@ -188,7 +188,7 @@ func main() {
 		})
 	})
 
-	router.POST("/tasks/new", func(ctx *gin.Context) {
+	router.POST("/tasks", func(ctx *gin.Context) {
 		sub, err := validateToken(ctx)
 		if err != nil {
 			return
@@ -215,21 +215,17 @@ func main() {
 		})
 	})
 
-	router.DELETE("/tasks/delete", func(ctx *gin.Context) {
+	// CHANGE TO ID WHEN PROPER DB IMPLEMENTED
+	router.DELETE("/tasks/:title", func(ctx *gin.Context) {
 		sub, err := validateToken(ctx)
 		if err != nil {
 			return
 		}
 
-		var task pkg.Task
-
-		err = ctx.ShouldBindJSON(&task)
-		if err != nil {
-			unknownError(err, ctx)
-			return
+		task := pkg.Task{
+			Owner: sub,
+			Title: ctx.Param("title"),
 		}
-
-		task.Owner = sub
 
 		err = backend.DeleteTaskJson(task)
 		if errors.Is(err, &pkg.DoesntExistError{}) {
