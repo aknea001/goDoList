@@ -20,3 +20,7 @@ type GetTasksRes struct {
 	Msg   string `json:"msg"`
 	Tasks []Task `json:"tasks"`
 }
+
+type DefaultRes struct {
+	Msg string `json:"msg"`
+}

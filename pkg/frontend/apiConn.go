@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/aknea001/goDoList/pkg"
 )
@@ -98,6 +99,7 @@ func (api APIconn) GetTasks() ([]pkg.Task, error) {
 	}
 
 	req.Header = api.Header
+
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -122,6 +124,45 @@ func (api APIconn) GetTasks() ([]pkg.Task, error) {
 	}
 
 	return newGetTasksRes.Tasks, nil
+}
+
+func (api APIconn) FinishTask(task pkg.Task) error {
+	fullUrl := fmt.Sprintf("%s/tasks/%s", api.BaseURL, url.PathEscape(task.Title))
+
+	req, err := http.NewRequest("DELETE", fullUrl, nil)
+	if err != nil {
+		return err
+	}
+
+	req.Header = api.Header
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer res.Body.Close()
+
+	data, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil
+	}
+
+	var defaultRes pkg.DefaultRes
+	err = json.Unmarshal(data, &defaultRes)
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode == 403 {
+		return &pkg.DoesntExistError{
+			ResourceName: "task",
+		}
+	} else if res.StatusCode != 200 {
+		return fmt.Errorf("%d: %s", res.StatusCode, defaultRes.Msg)
+	}
+
+	return nil
 }
 
 func NewAPIconn(baseURL string) APIconn {

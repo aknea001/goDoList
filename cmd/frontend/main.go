@@ -83,23 +83,47 @@ mainloop:
 		inputSlice := strings.Split(input, " ")
 		command := inputSlice[0]
 
-		switch command {
+		switch strings.ToLower(command) {
+		case "new":
+			newTask := pkg.Task{}
+
+			fmt.Print("Title: ")
+			titleScanner := bufio.NewScanner(os.Stdin)
+			titleScanner.Scan()
+			newTask.Title = titleScanner.Text()
+
+			fmt.Print("Description: ")
+			descScanner := bufio.NewScanner(os.Stdin)
+			descScanner.Scan()
+			newTask.Description = descScanner.Text()
+
+			//send api request
+
+			tasks = append(tasks, newTask)
 		case "fn":
+			var id int
+
 			if len(inputSlice) == 2 {
-				log.Print(inputSlice)
-				id, err := strconv.Atoi(inputSlice[1])
+				id, err = strconv.Atoi(inputSlice[1])
 				if err != nil {
 					fmt.Println("ID has to be of type int")
 					time.Sleep(1 * time.Second)
 
 					continue mainloop
 				}
-
-				//send api request
-
-				tasks = append(tasks[:id], tasks[id+1:]...)
+			} else {
+				fmt.Print("ID: ")
+				fmt.Scan(&id)
 			}
 
+			err = api.FinishTask(tasks[id-1])
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			tasks = append(tasks[:id-1], tasks[id:]...)
+		default:
+			fmt.Printf("%s not found", command)
 		}
 	}
 }
