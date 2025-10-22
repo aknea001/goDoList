@@ -97,7 +97,10 @@ mainloop:
 			descScanner.Scan()
 			newTask.Description = descScanner.Text()
 
-			//send api request
+			err = api.NewTask(newTask)
+			if err != nil {
+				log.Fatal(err)
+			}
 
 			tasks = append(tasks, newTask)
 		case "fn":
@@ -123,7 +126,7 @@ mainloop:
 
 			tasks = append(tasks[:id-1], tasks[id:]...)
 		default:
-			fmt.Printf("%s not found", command)
+			fmt.Printf("%s not found\n", command)
 		}
 	}
 }

@@ -126,6 +126,49 @@ func (api APIconn) GetTasks() ([]pkg.Task, error) {
 	return newGetTasksRes.Tasks, nil
 }
 
+func (api APIconn) NewTask(newTask pkg.Task) error {
+	fullUrl := fmt.Sprintf("%s/tasks", api.BaseURL)
+
+	byteValue, err := json.Marshal(newTask)
+	if err != nil {
+		return err
+	}
+
+	body := bytes.NewReader(byteValue)
+
+	req, err := http.NewRequest("POST", fullUrl, body)
+	if err != nil {
+		return err
+	}
+
+	req.Header = api.Header
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer res.Body.Close()
+
+	data, err := io.ReadAll(res.Body)
+	if err != nil {
+		return err
+	}
+
+	var defaultRes pkg.DefaultRes
+
+	err = json.Unmarshal(data, &defaultRes)
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode != 200 {
+		return fmt.Errorf("%d: %s", res.StatusCode, defaultRes.Msg)
+	}
+
+	return nil
+}
+
 func (api APIconn) FinishTask(task pkg.Task) error {
 	fullUrl := fmt.Sprintf("%s/tasks/%s", api.BaseURL, url.PathEscape(task.Title))
 
