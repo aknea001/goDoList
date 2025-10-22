@@ -272,20 +272,33 @@ func DeleteTaskJson(task pkg.Task) error {
 	newJsonData := make([]byte, 0)
 	deleted := false
 
+	count := 0
+	counting := true
+	var removeNextComma bool
+
 	jsonScanner := bufio.NewScanner(jsonFile)
 	for jsonScanner.Scan() {
 		currentBytes := jsonScanner.Bytes()
 
 		if len(currentBytes) <= 1 {
-			newJsonData = appendWithNewLine(newJsonData, currentBytes)
+			if !removeNextComma {
+				newJsonData = appendWithNewLine(newJsonData, currentBytes)
+			}
+
 			continue
 		}
+
+		removeNextComma = false
 
 		var currentTask pkg.Task
 
 		err = json.Unmarshal(currentBytes, &currentTask)
 		if err != nil {
 			return err
+		}
+
+		if counting {
+			count += 1
 		}
 
 		if currentTask.Owner != task.Owner ||
@@ -295,8 +308,14 @@ func DeleteTaskJson(task pkg.Task) error {
 			continue
 		}
 
-		indexesToRemove := len(newJsonData) - 2
-		newJsonData = newJsonData[:indexesToRemove]
+		if count != 1 {
+			indexesToRemove := len(newJsonData) - 2
+			newJsonData = newJsonData[:indexesToRemove]
+
+			counting = false
+		} else {
+			removeNextComma = true
+		}
 
 		deleted = true
 	}
