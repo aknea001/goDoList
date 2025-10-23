@@ -78,3 +78,62 @@ func DrawTable(tasks []pkg.Task) {
 
 	line(longestID, longestTitle, longestDesc)
 }
+
+func DrawOneTask(id int, task pkg.Task) {
+	longestID := max(len("ID"), len(strconv.Itoa(id)))
+	longestTitle := max(len("title"), len(task.Title))
+
+	longestDesc := max(len("Description"), len(task.Description))
+	longestDesc = min(longestDesc, 50)
+
+	line(longestID, longestTitle, longestDesc)
+	fmt.Printf("| ID%s | Title%s | Description%s |\n",
+		strings.Repeat(" ", longestID-2),
+		strings.Repeat(" ", longestTitle-5),
+		strings.Repeat(" ", longestDesc-11),
+	)
+	line(longestID, longestTitle, longestDesc)
+
+	descSlice := strings.SplitSeq(task.Description, " ")
+	descLines := make([]string, 0)
+
+	var newLine string
+	for element := range descSlice {
+		if len(newLine)+len(element)+1 > 51 {
+			descLines = append(descLines, newLine)
+
+			newLine = element + " "
+			continue
+		}
+
+		newLine += element
+
+		if len(newLine) != 50 {
+			newLine += " "
+		}
+	}
+
+	if newLine != "" {
+		descLines = append(descLines, newLine)
+	}
+
+	mid := len(descLines) / 2
+
+	for i, element := range descLines {
+		idToPrint := ""
+		titleToPrint := ""
+
+		if i == mid {
+			idToPrint = strconv.Itoa(id)
+			titleToPrint = task.Title
+		}
+
+		fmt.Printf("| %s%s | %s%s | %s%s |\n",
+			idToPrint, strings.Repeat(" ", longestID-len(idToPrint)),
+			titleToPrint, strings.Repeat(" ", longestTitle-len(titleToPrint)),
+			element, strings.Repeat(" ", longestDesc-len(element)),
+		)
+	}
+
+	line(longestID, longestTitle, longestDesc)
+}
